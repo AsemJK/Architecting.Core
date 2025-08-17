@@ -6,4 +6,12 @@
 4. **Chapter 4**
 ## Section 2: Designing with ASP.NET Core
 1. **Chapter 5** *Minimal APIs*
+* Top Level Statements: Now in Entry point(program.cs) we can stop using namespaces
+* Minimal Hosting: Combine two files (startup & program) into single file "program.cs" this laverage to minimize the biolerplate code necessary to bootstrap the application
+```C#
+WebApplicationBuilder builder = WebApplication.Create(args);
+webApplication app = builder.Build();
+app.Run();
+
+```
 2. **Chapter 6** *MVC*
