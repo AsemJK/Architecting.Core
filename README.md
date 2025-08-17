@@ -1,25 +1,25 @@
 # Architecting Asp.Net Core Applications ThirdEdition Book Digest
 ## Section 1: Principles and Methodologies
 1. **Chapter 1**
-    ***Introduction***
+    **Introduction**
     Design pattern is a _proven technique that we can use to solve a specific problem_
     Anti-Pattern / Code smells
     OSI Model
 2. **Chapter 2**
-    ***Automated Testing***
+    **Automated Testing**
         - Unit Tests (as needed)
         - Integrated Tests (most)
         - E2E Tests (few)
-    ***Testing Techniques***
+    **Testing Techniques**
         - White-Box
         - Black-Box
         - Gray-Box
-    ***Testing Frameworks***
+    **Testing Frameworks**
         - xUnit
         - NUnit
     
 3. **Chapter 3**
-    ***Architectural Principles***
+    **Architectural Principles**
     >DRY
 
     >KISS
