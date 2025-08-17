@@ -14,4 +14,10 @@ webApplication app = builder.Build();
 app.Run();
 
 ```
+* Minimal APIs: minimal here means Lean not mean small or not enough.
+[-] Serve essential features
+[-] Using Minimal APIs We map routes to delegate
+    - Inline Delegate (Arrow function)
+    - Method Delegate 
+
 2. **Chapter 6** *MVC*
