@@ -5,7 +5,9 @@
     Design pattern is a _proven technique that we can use to solve a specific problem_
     Anti-Pattern / Code smells
     OSI Model
+
 ---
+
 ### Chapter 2 *Automated Testing*
 **Types**
 - Unit Tests (as needed)
@@ -63,12 +65,13 @@
 WebApplicationBuilder builder = WebApplication.Create(args);
 webApplication app = builder.Build();
 app.Run();
-
 ```
-* Minimal APIs: minimal here means Lean not mean small or not enough.
-[-] Serve essential features
-[-] Using Minimal APIs We map routes to delegate
+**Minimal APIs**: minimal here means Lean not mean small or not enough.
+- Serve essential features
+- Using Minimal APIs We map routes to delegate
     - Inline Delegate (Arrow function)
-    - Method Delegate 
+    - Method Delegate (External method)
+- Most endpoints have _**Inputs**_ (Implicity , Explicity)
+- Inputs binding sources: Route, Query, Header, Body, Form, Services, Custom
 
 ### Chapter 6 *MVC*
