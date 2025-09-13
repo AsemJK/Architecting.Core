@@ -1,4 +1,5 @@
 # Architecting Asp.Net Core Applications ThirdEdition Book Digest
+![arch](./arch.core.png)
 ## Section 1: Principles and Methodologies
 ### Chapter 1
 **Introduction**
@@ -81,3 +82,5 @@ app.Run();
     _ClaimsPrincipal_:Same HttpContext.USer
 
 ### Chapter 6 *MVC*
+
+![arch]
