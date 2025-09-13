@@ -73,5 +73,11 @@ app.Run();
     - Method Delegate (External method)
 - Most endpoints have _**Inputs**_ (Implicity , Explicity)
 - Inputs binding sources: Route, Query, Header, Body, Form, Services, Custom
+- Special Types: 
+    _HttpContext_: This compass all requests and responses
+    _HttpRequest_: Same HttpContext.Request
+    _HttpResponse_: Same HttpContext.Response
+    _CancellationToken_:Same HttpContext.RequestAborted
+    _ClaimsPrincipal_:Same HttpContext.USer
 
 ### Chapter 6 *MVC*
