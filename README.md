@@ -1,4 +1,4 @@
-# Architecting Asp.Net Core Applications ThirdEdition Book Digest
+# Architecting Asp.Net Core Applications Third Edition Book Digest
 ![arch](./arch.core.png)
 ## Section 1: Principles and Methodologies
 ### Chapter 1
