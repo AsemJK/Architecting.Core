@@ -21,7 +21,7 @@
   3. The server receives the request 
   4. The server processes the request (execute/code logic)
   5. The server sends a response back to the client
-  6. The client receives the response and processes it
+  6. The client receives the response and the cycle ended
 
 **OSI Model**: The OSI model is a conceptual model that characterizes and standardizes the communication functions of a telecommunication system into seven abstraction layers.
 
