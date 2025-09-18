@@ -1,10 +1,11 @@
 # Architecting Asp.Net Core Applications Third Edition Book Digest
 ![arch](./arch.core.png)
-## Section 1: Principles and Methodologies
+# Section 1: Principles and Methodologies
 
 ### Chapter 1
 
-**Introduction**
+## Introduction
+
 ![chapter-1-introduction](chapter-1.png)
 
 **Design pattern** is a _proven technique that we can use to solve a specific problem_
@@ -12,6 +13,7 @@
 **Anti-Pattern / Code smells**: 
 - Code smells are indications that a part of the codebase may not be following the  best practices or may be violating the SOLID principles.
 - Code smells are not bugs, they are just indicators that the code may not be following the best practices.
+- The main problem in Anti Patterns coding is that the code will be hard to maintain
 
 **Understanding the web** (Request/Response):
   1. The communication starts
