@@ -98,6 +98,9 @@ app.Run();
     _CancellationToken_:Same HttpContext.RequestAborted
     _ClaimsPrincipal_:Same HttpContext.USer
 
+- **RFC 7807**: Is a specification for API error details as a _standardized format_
+
+
 ### Chapter 6 *MVC*
 
 ![arch]
