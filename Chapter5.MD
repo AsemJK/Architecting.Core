@@ -100,3 +100,6 @@ JsonGroup.MapGet("/data", () =>
 }
  */
 ```
+
+
+[Next Chapter](Chapter6.MD)

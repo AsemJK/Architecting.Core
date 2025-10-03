@@ -22,3 +22,5 @@
   6. The client receives the response and the cycle ended
 
 **OSI Model**: The OSI model is a conceptual model that characterizes and standardizes the communication functions of a telecommunication system into seven abstraction layers.
+
+[Next Chapter](Chapter2.MD)
