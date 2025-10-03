@@ -83,8 +83,8 @@ builder.Services.AddControllers()
     - Is a way to group endpoints
     - Example: I will apply JsonSerializerOptions to the group
 ```c#
-var JsonGroup = app.MapGroup("/json");
-JsonGroup.MapGet("/data", () =>
+var jsonGroup = app.MapGroup("/json");
+jsonGroup.MapGet("/data", () =>
 {
     var data = new { Message = "Hello, World!", Timestamp = DateTime.UtcNow };
     return TypedResults.Json(data, new System.Text.Json.JsonSerializerOptions
