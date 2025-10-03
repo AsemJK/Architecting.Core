@@ -65,3 +65,17 @@ app.MapGet("/weatherforecast", () =>
     return operation;
 });
 ```
+- Json Serialization Options:
+    - Camel Case: Is the default naming policy such as "firstName"
+    - Snake Case: such as "first_name"
+    - Kebab Case: such as "first-name"
+    - Pascal Case: such as "FirstName"
+- Customize Serialization Options
+- Example
+```c#
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
+``` 
