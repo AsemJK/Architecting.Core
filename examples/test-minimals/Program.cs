@@ -43,6 +43,15 @@ app.MapGet("/weatherforecast", () =>
     operation.Deprecated = true;
     return operation;
 });
+var JsonGroup = app.MapGroup("/json");
+JsonGroup.MapGet("/data", () =>
+{
+    var data = new { Message = "Hello, World!", Timestamp = DateTime.UtcNow };
+    return TypedResults.Json(data, new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
+    });
+});
 
 app.Run();
 

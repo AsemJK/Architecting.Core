@@ -79,3 +79,24 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 ``` 
+- **MapGroup**
+    - Is a way to group endpoints
+    - Example: I will apply JsonSerializerOptions to the group
+```c#
+var JsonGroup = app.MapGroup("/json");
+JsonGroup.MapGet("/data", () =>
+{
+    var data = new { Message = "Hello, World!", Timestamp = DateTime.UtcNow };
+    return TypedResults.Json(data, new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
+    });
+});
+//Result 
+/*
+{
+  "MESSAGE": "Hello, World!",
+  "TIMESTAMP": "2025-10-03T13:09:10.7468014Z"
+}
+ */
+```
