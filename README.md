@@ -1,8 +1,14 @@
 # Architecting Asp.Net Core Applications Third Edition Book Digest
 ![arch](./arch.core.png)
 # Section 1: Principles and Methodologies
+[Chapter 1](#chapter-1)
+[Chapter 2](#chapter-2)
+[Chapter 3](#chapter-3)
+[Chapter 4](#chapter-4)
+# Section 2: Designing with ASP.NET Core
+[Chapter 5](#chapter-5)
 
-### Chapter 1
+## Chapter 1
 
 ## Introduction
 
@@ -26,7 +32,8 @@
 **OSI Model**: The OSI model is a conceptual model that characterizes and standardizes the communication functions of a telecommunication system into seven abstraction layers.
 
 
-### Chapter 2 *Automated Testing*
+## Chapter 2
+*Automated Testing*
 **Types**
 - Unit Tests (as needed)
 - Integrated Tests (most)
@@ -41,7 +48,7 @@
 - xUnit
 - NUnit
 ---    
-### Chapter 3
+## Chapter 3
 **Architectural Principles**
 1. DRY
     This principle advocate the SoC (Seperation Of Concern) princile
@@ -58,7 +65,8 @@
 
 ---
 
-### Chapter 4 *Rest APIs*
+## Chapter 4
+*Rest APIs*
 1. Is internet-based web service use HTTP as a transport protocol
 2. Methods/Verbs : GET,POST,PUT,DELETE,PATCH
 3. HTTP Status Codes: 20X OK, 30X Redirection, 40X Client Side Errors, 50X Server Side Errors
@@ -75,8 +83,9 @@
 | Output           | Dto as Json  |
 
 
-## Section 2: Designing with ASP.NET Core
-### Chapter 5 *Minimal APIs*
+# Section 2: Designing with ASP.NET Core
+## Chapter 5 
+*Minimal APIs*
 * Top Level Statements: Now in Entry point(program.cs) we can stop using namespaces
 * Minimal Hosting: Combine two files (startup & program) into single file "program.cs" this laverage to minimize the biolerplate code necessary to bootstrap the application
 ```C#
@@ -99,8 +108,46 @@ app.Run();
     _ClaimsPrincipal_:Same HttpContext.USer
 
 - **RFC 7807**: Is a specification for API error details as a _standardized format_
+The typical response has: title, status, detail, instance
+Example: 
+```
+HTTP/1.1 404 Not Found
+Content-Type: application/problem+json
 
+{
+  "type": "https://example.com/probs/not-found",
+  "title": "Resource not found",
+  "status": 404,
+  "detail": "The requested user with id=123 was not found.",
+  "instance": "/users/123"
+}
+```
+- **Metadata**: Is a way to add additional information to the API
+    - Swagger: Is a tool that help us to document the API
+    - OpenAPI: Is a specification that define the format of the documentation
+- Example
+```c#
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+})
+.WithName("GetWeatherForecast")
+.WithOpenApi(operation =>
+{
+    operation.Description = "Gets a 5-day weather forecast.";
+    operation.Summary = "Get Weather Forecast";
+    operation.Deprecated = true;
+    return operation;
+});
+```
 
 ### Chapter 6 *MVC*
-
-![arch]
+... Soon

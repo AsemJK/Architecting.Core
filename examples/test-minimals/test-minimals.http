@@ -1,0 +1,6 @@
+@test_minimals_HostAddress = http://localhost:5023
+
+GET {{test_minimals_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
