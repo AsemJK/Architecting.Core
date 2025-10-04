@@ -2,6 +2,9 @@
 
 ## Chapter 3
 **Architectural Principles**
+
+Architectural Principles delves into foundational guidelines for contemporary software development, including the Separation of Concerns (SoC), Don’t Repeat Yourself (DRY), Keep It Simple, Stupid (KISS), and You Aren’t Gonna Need It (YAGNI) principles, culminating in a detailed exploration of The SOLID principles.
+
 1. DRY
     This principle advocate the SoC (Seperation Of Concern) princile
 2. KISS
