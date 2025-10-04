@@ -11,6 +11,7 @@ webApplication app = builder.Build();
 app.Run();
 ```
 **Minimal APIs**: minimal here means Lean not mean small or not enough.
+Minimal APIs represent a shift in ASP.NET Core toward a leaner approach, highly inspired by technologies such as Node.js and Express. The sources present a comprehensive view of Minimal APIs, detailing their structure, customization, organization, and interaction with established architectural patterns like Data Transfer Objects (DTOs)
 - Serve essential features
 - Using Minimal APIs We map routes to delegate
     - Inline Delegate (Arrow function)
