@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
+using test_minimals.DTOs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -43,8 +46,43 @@ app.MapGet("/weatherforecast", () =>
     operation.Deprecated = true;
     return operation;
 });
-var JsonGroup = app.MapGroup("/json");
-JsonGroup.MapGet("/data", () =>
+
+var employees = new List<EmployeeDto>
+{
+    new EmployeeDto { Id = 1, Name = "Alice", Position = "Developer" },
+    new EmployeeDto { Id = 2, Name = "Bob", Position = "Manager" },
+    new EmployeeDto { Id = 3, Name = "Charlie", Position = "Designer" }
+};
+var employeeGroup = app.MapGroup("/employees");
+
+employeeGroup.MapPost("/", ([FromBody] EmployeeFilter filter) =>
+{
+    var result = employees.AsQueryable();
+    if (!string.IsNullOrEmpty(filter.Name))
+    {
+        result = result.Where(e => e.Name != null && e.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase));
+    }
+    if (filter.Salary.HasValue)
+    {
+        result = result.Where(e => e.Salary.HasValue && e.Salary.Value >= filter.Salary.Value);
+    }
+    return Results.Ok(result.ToList());
+})
+    .WithName("GetEmployees")
+    .AddEndpointFilter<EmployeeFilter>();
+
+var jsonGroup = app.MapGroup("/json");
+
+
+jsonGroup.MapGet("/data/{rate}/rate", (string rating) =>
+{
+}).AddEndpointFilter(async (context, next) =>
+{
+    var rating = context.GetArgument<string>(0);
+    return await next(context);
+});
+
+jsonGroup.MapGet("/data", () =>
 {
     var data = new { Message = "Hello, World!", Timestamp = DateTime.UtcNow };
     return TypedResults.Json(data, new System.Text.Json.JsonSerializerOptions
