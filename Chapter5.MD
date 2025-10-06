@@ -129,7 +129,7 @@ jsonGroup.MapGet("/data", () =>
 ```
 - Example of using the filter
 ```c#
-var employees = new List<EmployeeDto>
+v ar employees = new List<EmployeeDto>
 {
     new EmployeeDto { Id = 1, Name = "Alice", Position = "Developer" },
     new EmployeeDto { Id = 2, Name = "Bob", Position = "Manager" },
