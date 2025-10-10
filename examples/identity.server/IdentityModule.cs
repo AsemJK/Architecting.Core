@@ -1,8 +1,9 @@
-﻿using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Test;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using test_minimals.infra.Data;
+using test_minimals.infra.Models;
 
 namespace identity.server
 {
@@ -10,33 +11,44 @@ namespace identity.server
     {
         public static IServiceCollection AddIdentityModule(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddIdentityServer()
-                    .AddInMemoryClients(new[]
-                    {
-                        new Client
-                        {
-                            ClientId = "client",
-                            ClientSecrets = { new Secret("secret".Sha256()) },
-                            AllowedGrantTypes = GrantTypes.Code, // Explicitly allow Authorization Code Flow
-                            RedirectUris = { "https://localhost:7161/signin-oidc" }, // Match the client's redirect URI
-                            PostLogoutRedirectUris = { "https://localhost:7161/signout-callback-oidc" }, // Optional
-                            AllowedScopes = { "api1", IdentityServerConstants.StandardScopes.OpenId, IdentityServerConstants.StandardScopes.Profile },
-                            RequirePkce = true, // Enable PKCE
-                            AllowPlainTextPkce = false // Enforce S256 for security
-                        }
-                    })
-                    .AddInMemoryApiScopes(new[] { new ApiScope("api1", "My API") })
-                    .AddInMemoryIdentityResources(new[] { new IdentityResources.OpenId() })
-                    .AddTestUsers(new List<TestUser>
-                    {
-                        new TestUser
-                        {
-                            SubjectId = "1",
-                            Username = "asem",
-                            Password = "password"
-                        }
-                    })
-                    .AddDeveloperSigningCredential(); // For development only
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            // 1️⃣ Add EF Core with SQL Server
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            // 2️⃣ Add ASP.NET Identity
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            // 3️⃣ Add IdentityServer + EF stores
+            var migrationsAssembly = typeof(IdentityModule).Assembly.GetName().Name;
+
+            services.AddIdentityServer(options =>
+            {
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                options.EmitStaticAudienceClaim = true;
+            })
+            .AddAspNetIdentity<ApplicationUser>()
+            .AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = b =>
+                    b.UseSqlServer(connectionString,
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+            })
+            .AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = b =>
+                    b.UseSqlServer(connectionString,
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+                options.EnableTokenCleanup = true;
+            })
+            .AddDeveloperSigningCredential(); // Only for dev
+
             return services;
         }
     }

@@ -1,10 +1,12 @@
 using identity.server;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using test_minimals.DTOs;
 using test_minimals.infra;
 using test_minimals.infra.Data;
+using test_minimals.infra.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,35 +17,57 @@ builder.Services.AddApplicationDataModule(builder.Configuration);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-
-builder.Services.AddAuthentication(options =>
+builder.Services.AddSwaggerGen(c =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie()
-.AddOpenIdConnect(options =>
-{
-    options.Authority = "https://localhost:7161"; // IdentityServer URL
-    options.ClientId = "client";
-    options.ClientSecret = "secret";
-    options.ResponseType = "code"; // Authorization Code Flow
-    options.SaveTokens = true;
-    options.Scope.Add("api1");
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Test Minimals API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("https://localhost:7161/connect/authorize"),
+                TokenUrl = new Uri("https://localhost:7161/connect/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "test-minimals.read", "Read access to Test Minimals API" },
+                    { "test-minimals.write", "Write access to Test Minimals API" }
+                }
+            }
+        }
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
-builder.Services.AddAuthorization();
-builder.Services.AddIdentityModule(builder.Configuration);
 
+
+
+builder.Services.AddIdentityModule(builder.Configuration);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://localhost:7161"; // IdentityServer URL
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+builder.Services.AddAuthorization();
 
 #endregion
 
 #region Configure Services
 var app = builder.Build();
-
+DataSeeder.Initialize(app);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -54,10 +78,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<test_minimals.Helpers.GlobalExceptionHandler>();
 
-
+//Middlewares
+//app.UseRouting();
+app.UseIdentityServer();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseIdentityServer();
 
 
 #endregion
@@ -101,22 +126,43 @@ var employeeGroup = app.MapGroup("/employees");
 
 employeeGroup.MapPost("/search", ([FromBody] EmployeeFilter filter) =>
 {
-    var result = employees.AsQueryable();
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var result = new List<Employee>();
     if (!string.IsNullOrEmpty(filter.Name))
     {
-        result = result.Where(e => e.Name != null && e.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase));
+        result = db.Employees.Where(e => e.Name != null && e.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase)).ToList();
     }
     if (filter.Salary.HasValue)
     {
-        result = result.Where(e => e.Salary.HasValue && e.Salary.Value >= filter.Salary.Value);
+        result = db.Employees.Where(e => e.Salary.HasValue && e.Salary.Value >= filter.Salary.Value).ToList();
     }
     return Results.Ok(result.ToList());
 })
     .WithName("GetEmployees")
     .AddEndpointFilter<EmployeeFilter>()
-    .RequireAuthorization()
     ;
-
+employeeGroup.MapGet("/{id}", (string id) =>
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var employee = db.Employees.FirstOrDefault(e => e.Id == id);
+    if (employee == null)
+    {
+        return Results.NotFound();
+    }
+    var dto = new EmployeeDto
+    {
+        Id = employee.Id,
+        Name = employee.Name,
+        Position = employee.Position,
+        Salary = employee.Salary
+    };
+    return Results.Ok(dto);
+})
+    .WithName("GetEmployeeById")
+    //.RequireAuthorization()
+    ;
 
 employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
 {
@@ -159,7 +205,7 @@ jsonGroup.MapGet("/data", () =>
     {
         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
     });
-});
+}).RequireAuthorization();
 
 
 app.Run();
