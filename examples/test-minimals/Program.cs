@@ -1,3 +1,6 @@
+using identity.server;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
 using test_minimals.DTOs;
 using test_minimals.infra;
@@ -14,6 +17,28 @@ builder.Services.AddApplicationDataModule(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddOpenIdConnect(options =>
+{
+    options.Authority = "https://localhost:7161"; // IdentityServer URL
+    options.ClientId = "client";
+    options.ClientSecret = "secret";
+    options.ResponseType = "code"; // Authorization Code Flow
+    options.SaveTokens = true;
+    options.Scope.Add("api1");
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+});
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityModule(builder.Configuration);
+
+
 #endregion
 
 #region Configure Services
@@ -28,6 +53,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseMiddleware<test_minimals.Helpers.GlobalExceptionHandler>();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseIdentityServer();
+
 
 #endregion
 
@@ -67,7 +98,8 @@ var employees = new List<EmployeeDto>
 };
 var employeeGroup = app.MapGroup("/employees");
 
-employeeGroup.MapGet("/", ([FromBody] EmployeeFilter filter) =>
+
+employeeGroup.MapPost("/search", ([FromBody] EmployeeFilter filter) =>
 {
     var result = employees.AsQueryable();
     if (!string.IsNullOrEmpty(filter.Name))
@@ -81,7 +113,9 @@ employeeGroup.MapGet("/", ([FromBody] EmployeeFilter filter) =>
     return Results.Ok(result.ToList());
 })
     .WithName("GetEmployees")
-    .AddEndpointFilter<EmployeeFilter>();
+    .AddEndpointFilter<EmployeeFilter>()
+    .RequireAuthorization()
+    ;
 
 
 employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
@@ -126,6 +160,7 @@ jsonGroup.MapGet("/data", () =>
         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
     });
 });
+
 
 app.Run();
 

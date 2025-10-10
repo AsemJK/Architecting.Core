@@ -14,7 +14,7 @@ namespace test_minimals.DTOs
             {
                 // Example: Log the filter criteria
                 Console.WriteLine($"Filtering employees with Name: {filter.Name}, Salary: {filter.Salary}");
-                if (filter.Salary.HasValue && filter.Salary <= 0)
+                if (filter.Salary.HasValue && filter.Salary < 0)
                 {
                     return ValueTask.FromResult<object?>(Results.BadRequest("Salary must be non-negative"));
                 }
