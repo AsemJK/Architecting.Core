@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using test_minimals.DTOs;
 using test_minimals.infra;
+using test_minimals.infra.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+#region Register Services
+
 // Register DataModule services
 builder.Services.AddApplicationDataModule(builder.Configuration);
 // Add services to the container.
@@ -10,9 +14,9 @@ builder.Services.AddApplicationDataModule(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+#endregion
 
-
-
+#region Configure Services
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,7 +27,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<test_minimals.Helpers.GlobalExceptionHandler>();
 
+#endregion
+
+#region APIs
 
 var summaries = new[]
 {
@@ -53,13 +61,13 @@ app.MapGet("/weatherforecast", () =>
 
 var employees = new List<EmployeeDto>
 {
-    new EmployeeDto { Id = 1, Name = "Alice", Position = "Developer" },
-    new EmployeeDto { Id = 2, Name = "Bob", Position = "Manager" },
-    new EmployeeDto { Id = 3, Name = "Charlie", Position = "Designer" }
+    new EmployeeDto { Id = Guid.NewGuid().ToString(), Name = "Alice", Position = "Developer" },
+    new EmployeeDto { Id = Guid.NewGuid().ToString(), Name = "Bob", Position = "Manager" },
+    new EmployeeDto { Id = Guid.NewGuid().ToString(), Name = "Charlie", Position = "Designer" }
 };
 var employeeGroup = app.MapGroup("/employees");
 
-employeeGroup.MapPost("/", ([FromBody] EmployeeFilter filter) =>
+employeeGroup.MapGet("/", ([FromBody] EmployeeFilter filter) =>
 {
     var result = employees.AsQueryable();
     if (!string.IsNullOrEmpty(filter.Name))
@@ -74,6 +82,30 @@ employeeGroup.MapPost("/", ([FromBody] EmployeeFilter filter) =>
 })
     .WithName("GetEmployees")
     .AddEndpointFilter<EmployeeFilter>();
+
+
+employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var employee = db.Employees.FirstOrDefault(e => e.Name == payload.Name);
+    if (employee != null)
+    {
+        return Results.Conflict($"Employee with name {payload.Name} already exists.");
+    }
+    payload.Id = Guid.NewGuid().ToString();
+    db.Employees.Add(new test_minimals.infra.Models.Employee
+    {
+        Id = payload.Id,
+        Name = payload.Name,
+        Position = payload.Position,
+        Salary = payload.Salary
+    });
+    await db.SaveChangesAsync();
+    return Results.Created($"/employees/{payload.Id}", payload);
+})
+    .WithName("CreateEmployee");
+
 
 var jsonGroup = app.MapGroup("/json");
 
@@ -101,3 +133,6 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+#endregion
+
