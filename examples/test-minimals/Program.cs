@@ -1,7 +1,5 @@
-using identity.server;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using identity.server;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using test_minimals.DTOs;
 using test_minimals.infra;
@@ -19,55 +17,48 @@ builder.Services.AddApplicationDataModule(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Test Minimals API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Test Minimal API",
+        Version = "v1"
+    });
+
+    // 🔒 Add JWT security definition
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                AuthorizationUrl = new Uri("https://localhost:7161/connect/authorize"),
-                TokenUrl = new Uri("https://localhost:7161/connect/token"),
-                Scopes = new Dictionary<string, string>
-                {
-                    { "test-minimals.read", "Read access to Test Minimals API" },
-                    { "test-minimals.write", "Write access to Test Minimals API" }
-                }
-            }
-        }
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by your access token.\nExample: **Bearer eyJhbGciOiJIUzI1NiIs...**"
     });
+
+    // 🔒 Require JWT token globally (optional)
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
             Array.Empty<string>()
         }
     });
 });
 
-
-
 builder.Services.AddIdentityModule(builder.Configuration);
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = "https://localhost:7161"; // IdentityServer URL
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false
-        };
-    });
 builder.Services.AddAuthorization();
 
 #endregion
 
 #region Configure Services
 var app = builder.Build();
-DataSeeder.Initialize(app);
+Dataseeder.Seed(app);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -79,8 +70,7 @@ app.UseHttpsRedirection();
 app.UseMiddleware<test_minimals.Helpers.GlobalExceptionHandler>();
 
 //Middlewares
-//app.UseRouting();
-app.UseIdentityServer();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -88,6 +78,8 @@ app.UseAuthorization();
 #endregion
 
 #region APIs
+
+
 
 var summaries = new[]
 {
@@ -131,7 +123,7 @@ employeeGroup.MapPost("/search", ([FromBody] EmployeeFilter filter) =>
     var result = new List<Employee>();
     if (!string.IsNullOrEmpty(filter.Name))
     {
-        result = db.Employees.Where(e => e.Name != null && e.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+        result = db.Employees.Where(e => e.Name.Contains(filter.Name)).ToList();
     }
     if (filter.Salary.HasValue)
     {
@@ -161,7 +153,7 @@ employeeGroup.MapGet("/{id}", (string id) =>
     return Results.Ok(dto);
 })
     .WithName("GetEmployeeById")
-    //.RequireAuthorization()
+    .RequireAuthorization()
     ;
 
 employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
@@ -208,12 +200,18 @@ jsonGroup.MapGet("/data", () =>
 }).RequireAuthorization();
 
 
+#endregion
+
+#region Identity
+
+#endregion
+
+
+
 app.Run();
+
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
-
-#endregion
-
