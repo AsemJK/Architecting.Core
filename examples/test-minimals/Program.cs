@@ -1,14 +1,19 @@
 ﻿using identity.server;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using test_minimals.DTOs;
 using test_minimals.infra;
 using test_minimals.infra.Data;
 using test_minimals.infra.Models;
+using test_minimals.Repository;
+using test_minimals.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Register Services
+
+builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection("JwtConfiguration"));
 
 // Register DataModule services
 builder.Services.AddApplicationDataModule(builder.Configuration);
@@ -50,7 +55,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddAuthorization();
 
@@ -204,6 +210,29 @@ jsonGroup.MapGet("/data", () =>
 
 #region Identity
 
+var identityGroup = app.MapGroup("/identity");
+identityGroup.MapPost("/register", async ([FromBody] RegisterDto model) =>
+{
+    using var scope = app.Services.CreateScope();
+    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+    var result = await userService.Register(model);
+    if ((HttpStatusCode)result.Status != HttpStatusCode.OK)
+    {
+        return Results.BadRequest(result);
+    }
+    return Results.Ok(result);
+}).WithName("RegisterUser");
+identityGroup.MapPost("/login", async ([FromBody] LoginDto model) =>
+{
+    using var scope = app.Services.CreateScope();
+    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+    var result = await userService.Login(model);
+    if (string.IsNullOrEmpty(result.Id))
+    {
+        return Results.BadRequest(result);
+    }
+    return Results.Ok(result);
+}).WithName("LoginUser");
 #endregion
 
 
