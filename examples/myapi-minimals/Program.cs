@@ -235,6 +235,31 @@ identityGroup.MapPost("/login", async ([FromBody] LoginDto model) =>
 }).WithName("LoginUser");
 #endregion
 
+#region NewsLetter Updates
+var _updates = new[]
+{
+    new NewsLetterDto { Id = Guid.NewGuid().ToString() , Title = "Update 1", Date = DateTime.UtcNow.AddDays(-1) },
+    new NewsLetterDto { Id = Guid.NewGuid().ToString() , Title = "Update 2", Date = DateTime.UtcNow.AddDays(-2) },
+    new NewsLetterDto { Id = Guid.NewGuid().ToString() , Title = "Update 3", Date = DateTime.UtcNow.AddDays(-3) }
+};
+var updatesGroup = app.MapGroup("/updates");
+updatesGroup.MapGet("/", ([FromQuery] DateTime? since = null) =>
+{
+    var updates = _updates.AsEnumerable();
+    if (since != null)
+    {
+        updates = _updates.Where(u => u.Date == since.GetValueOrDefault().Date).ToArray();
+    }
+    return Results.Ok(updates);
+}).WithName("GetUpdates").RequireAuthorization();
+updatesGroup.MapPost("/", ([FromBody] dynamic update) =>
+{
+    _updates.ToList().Add(update);
+    // In a real application, you would save the update to a database
+    return Results.Created($"/updates/4", update);
+}).WithName("CreateUpdate").RequireAuthorization();
+
+#endregion
 
 
 app.Run();

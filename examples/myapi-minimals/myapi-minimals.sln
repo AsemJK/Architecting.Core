@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-minimals", "test-minimals.csproj", "{47B3A82E-5096-7690-E121-068464F1E5DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myapi-minimals", "myapi-minimals.csproj", "{47B3A82E-5096-7690-E121-068464F1E5DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-minimals.infra", "..\test-minimals.infra\test-minimals.infra.csproj", "{C6FD4631-2111-4A65-BA90-263A69C739C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myapi-minimals.infra", "..\myapi-minimals.infra\myapi-minimals.infra.csproj", "{C6FD4631-2111-4A65-BA90-263A69C739C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "identity.server", "..\identity.server\identity.server.csproj", "{9C8FA54A-62EE-48D1-9A08-D1BA0E8F520D}"
 EndProject

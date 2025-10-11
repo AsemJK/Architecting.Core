@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\test-minimals.infra\test-minimals.infra.csproj" />
+    <ProjectReference Include="..\myapi-minimals.infra\myapi-minimals.infra.csproj" />
   </ItemGroup>
 
 </Project>
