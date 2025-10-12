@@ -12,8 +12,8 @@ using myapi_minimals.infra.Data;
 namespace myapi_minimals.infra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251011035731_initDb")]
-    partial class initDb
+    [Migration("20251012024452_add_newsletter")]
+    partial class add_newsletter
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,34 @@ namespace myapi_minimals.infra.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("RoleUser");
+                });
+
+            modelBuilder.Entity("myapi_minimals.infra.Models.NewsLetter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NewsLetters");
                 });
 
             modelBuilder.Entity("myapi_minimals.infra.Models.Employee", b =>

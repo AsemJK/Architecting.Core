@@ -1,4 +1,4 @@
-﻿namespace test_minimals.Helpers
+﻿namespace myapi_minimals.Helpers
 {
     public class GlobalExceptionHandler
     {

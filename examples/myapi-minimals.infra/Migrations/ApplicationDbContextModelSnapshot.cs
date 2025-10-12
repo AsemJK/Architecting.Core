@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using test_minimals.infra.Data;
+using myapi_minimals.infra.Data;
 
 #nullable disable
 
-namespace test_minimals.infra.Migrations
+namespace myapi_minimals.infra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -37,7 +37,35 @@ namespace test_minimals.infra.Migrations
                     b.ToTable("RoleUser");
                 });
 
-            modelBuilder.Entity("test_minimals.infra.Models.Employee", b =>
+            modelBuilder.Entity("myapi_minimals.infra.Models.NewsLetter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NewsLetters");
+                });
+
+            modelBuilder.Entity("myapi_minimals.infra.Models.Employee", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -62,7 +90,7 @@ namespace test_minimals.infra.Migrations
                     b.ToTable("Employees");
                 });
 
-            modelBuilder.Entity("test_minimals.infra.Models.Identity.Role", b =>
+            modelBuilder.Entity("myapi_minimals.infra.Models.Identity.Role", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +113,7 @@ namespace test_minimals.infra.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("test_minimals.infra.Models.Identity.User", b =>
+            modelBuilder.Entity("myapi_minimals.infra.Models.Identity.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -116,13 +144,13 @@ namespace test_minimals.infra.Migrations
 
             modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.HasOne("test_minimals.infra.Models.Identity.Role", null)
+                    b.HasOne("myapi_minimals.infra.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("test_minimals.infra.Models.Identity.User", null)
+                    b.HasOne("myapi_minimals.infra.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)

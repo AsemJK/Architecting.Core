@@ -1,13 +1,15 @@
 ﻿using identity.server;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.OpenApi.Models;
+using myapi_minimals.DTOs;
+using myapi_minimals.infra;
+using myapi_minimals.infra.Data;
+using myapi_minimals.infra.Models;
+using myapi_minimals.Repository;
+using myapi_minimals.Services;
+using myapi_minimals.SignalR;
 using System.Net;
-using test_minimals.DTOs;
-using test_minimals.infra;
-using test_minimals.infra.Data;
-using test_minimals.infra.Models;
-using test_minimals.Repository;
-using test_minimals.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,8 +59,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<INewsLetterService, NewsLetterService>();
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
 
 #endregion
 
@@ -72,8 +76,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Configure SignalR hub
+app.MapHub<UpdateHub>("/hub/update");
+
 app.UseHttpsRedirection();
-app.UseMiddleware<test_minimals.Helpers.GlobalExceptionHandler>();
+app.UseMiddleware<myapi_minimals.Helpers.GlobalExceptionHandler>();
 
 //Middlewares
 app.UseRouting();
@@ -172,7 +179,7 @@ employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
         return Results.Conflict($"Employee with name {payload.Name} already exists.");
     }
     payload.Id = Guid.NewGuid().ToString();
-    db.Employees.Add(new test_minimals.infra.Models.Employee
+    db.Employees.Add(new myapi_minimals.infra.Models.Employee
     {
         Id = payload.Id,
         Name = payload.Name,
@@ -243,21 +250,25 @@ var _updates = new[]
     new NewsLetterDto { Id = Guid.NewGuid().ToString() , Title = "Update 3", Date = DateTime.UtcNow.AddDays(-3) }
 };
 var updatesGroup = app.MapGroup("/updates");
-updatesGroup.MapGet("/", ([FromQuery] DateTime? since = null) =>
+updatesGroup.MapGet("/", async ([FromQuery] DateTime? since = null) =>
 {
-    var updates = _updates.AsEnumerable();
-    if (since != null)
-    {
-        updates = _updates.Where(u => u.Date == since.GetValueOrDefault().Date).ToArray();
-    }
+    var scope = app.Services.CreateScope();
+    var newsLetterService = scope.ServiceProvider.GetRequiredService<INewsLetterService>();
+
+    var updates = (await newsLetterService.List(since)).ToList();
+
     return Results.Ok(updates);
 }).WithName("GetUpdates").RequireAuthorization();
-updatesGroup.MapPost("/", ([FromBody] NewsLetterDto update) =>
+updatesGroup.MapPost("/", async ([FromBody] NewsLetterDto update, [FromServices] IHubContext<UpdateHub> hubContext) =>
 {
+    var scope = app.Services.CreateScope();
+    var newsLetterService = scope.ServiceProvider.GetRequiredService<INewsLetterService>();
+
     update.Id = Guid.NewGuid().ToString();
     update.Date = DateTime.UtcNow.Date;
-    _updates.ToList().Add(update);
-    // In a real application, you would save the update to a database
+
+    await newsLetterService.AddAsync(update, autoSave: true);
+    await hubContext.Clients.All.SendAsync("ReceiveUpdate", update);
     return Results.Created($"/updates/{update.Id}", update);
 }).WithName("CreateUpdate").RequireAuthorization();
 

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using test_minimals.infra.Models;
-using test_minimals.infra.Models.Identity;
+using myapi_minimals.infra.Models;
+using myapi_minimals.infra.Models.Identity;
 
-namespace test_minimals.infra.Data
+namespace myapi_minimals.infra.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -12,6 +12,7 @@ namespace test_minimals.infra.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<NewsLetter> NewsLetters { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

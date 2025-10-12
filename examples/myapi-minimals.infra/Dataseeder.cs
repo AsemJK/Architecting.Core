@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using test_minimals.infra.Data;
-namespace test_minimals.infra
+using myapi_minimals.infra.Data;
+namespace myapi_minimals.infra
 {
     public static class Dataseeder
     {

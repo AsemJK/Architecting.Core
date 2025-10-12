@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using myapi_minimals.DTOs;
+using myapi_minimals.infra.Models.Identity;
+using myapi_minimals.Repository;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using test_minimals.DTOs;
-using test_minimals.infra.Models.Identity;
-using test_minimals.Repository;
 
-namespace test_minimals.Services
+namespace myapi_minimals.Services
 {
     public class UserService : IUserService
     {
@@ -42,26 +42,26 @@ namespace test_minimals.Services
                 Description = "User registered successfully"
             });
         }
-        public Task<UserDto> Login(LoginDto payload)
+        public async Task<UserDto> Login(LoginDto payload)
         {
-            var user = _usersRepository.GetAllAsync<User>().Result.FirstOrDefault(u => u.UserName == payload.UserName || u.Email.Equals(payload.UserName));
+            var user = (await _usersRepository.GetAllAsync(u => u.UserName == payload.UserName || u.Email.Equals(payload.UserName))).FirstOrDefault();
             if (user == null)
             {
-                return Task.FromResult(new UserDto()
+                return new UserDto()
                 {
                     Id = string.Empty,
                     UserName = "User Not Found"
-                });
+                };
             }
             var passwordHasher = new PasswordHasher<User>();
             var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, payload.Password);
             if (result == PasswordVerificationResult.Failed)
             {
-                return Task.FromResult(new UserDto()
+                return new UserDto()
                 {
                     Id = string.Empty,
                     UserName = "Invalid Password"
-                });
+                };
             }
             var claims = new[] { new Claim(ClaimTypes.Name, user.UserName) };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Value.SecretKey));
@@ -74,7 +74,7 @@ namespace test_minimals.Services
                 signingCredentials: creds
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return Task.FromResult(new UserDto
+            return new UserDto
             {
                 Id = user.Id.ToString(),
                 UserName = user.UserName,
@@ -82,7 +82,7 @@ namespace test_minimals.Services
                 Token = tokenString,
                 TokenExpiry = token.ValidTo,
                 IsActive = user.IsActive
-            });
+            };
         }
     }
     public interface IUserService

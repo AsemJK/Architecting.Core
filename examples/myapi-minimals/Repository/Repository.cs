@@ -1,6 +1,8 @@
-﻿using test_minimals.infra.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using myapi_minimals.infra.Data;
+using System.Linq.Expressions;
 
-namespace test_minimals.Repository
+namespace myapi_minimals.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -12,7 +14,7 @@ namespace test_minimals.Repository
             _dbContext = dbContext;
             _logger = logger;
         }
-        public Task AddAsync<T>(T entity, bool autoSave = true) where T : class
+        public Task AddAsync(T entity, bool autoSave = true)
         {
             _dbContext.Set<T>().Add(entity);
             if (autoSave)
@@ -22,7 +24,7 @@ namespace test_minimals.Repository
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync<T>(T entity, bool autoSave = true) where T : class
+        public Task DeleteAsync(T entity, bool autoSave = true)
         {
             _dbContext.Set<T>().Remove(entity);
             if (autoSave)
@@ -32,12 +34,19 @@ namespace test_minimals.Repository
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<T>> GetAllAsync<T>() where T : class
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null)
         {
-            return Task.FromResult(_dbContext.Set<T>().AsEnumerable());
+            IQueryable<T> query = _dbContext.Set<T>();
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.ToListAsync();
         }
 
-        public Task<T?> GetByIdAsync<T>(int id) where T : class
+        public Task<T?> GetByIdAsync(int id)
         {
             return _dbContext.Set<T>().FindAsync(id).AsTask();
         }
@@ -47,7 +56,7 @@ namespace test_minimals.Repository
             return _dbContext.SaveChangesAsync();
         }
 
-        public Task UpdateAsync<T>(T entity, bool autoSave = true) where T : class
+        public Task UpdateAsync(T entity, bool autoSave = true)
         {
             _dbContext.Set<T>().Update(entity);
             if (autoSave)
@@ -59,11 +68,11 @@ namespace test_minimals.Repository
     }
     public interface IRepository<T> where T : class
     {
-        Task AddAsync<T>(T entity, bool autoSave = true) where T : class;
-        Task<T?> GetByIdAsync<T>(int id) where T : class;
-        Task<IEnumerable<T>> GetAllAsync<T>() where T : class;
-        Task UpdateAsync<T>(T entity, bool autoSave = true) where T : class;
-        Task DeleteAsync<T>(T entity, bool autoSave = true) where T : class;
+        Task AddAsync(T entity, bool autoSave = true);
+        Task<T?> GetByIdAsync(int id);
+        Task UpdateAsync(T entity, bool autoSave = true);
+        Task DeleteAsync(T entity, bool autoSave = true);
         Task SaveChangesAsync();
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null);
     }
 }

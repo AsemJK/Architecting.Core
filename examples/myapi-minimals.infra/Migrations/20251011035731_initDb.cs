@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace test_minimals.infra.Migrations
+namespace myapi_minimals.infra.Migrations
 {
     /// <inheritdoc />
     public partial class initDb : Migration

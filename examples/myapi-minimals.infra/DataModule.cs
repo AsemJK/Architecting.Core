@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using test_minimals.infra.Data;
+using myapi_minimals.infra.Data;
 
-namespace test_minimals.infra
+namespace myapi_minimals.infra
 {
     public static class DataModule
     {

@@ -1,8 +1,7 @@
-﻿namespace myapi_minimals.DTOs
+﻿namespace myapi_minimals.infra.Models
 {
-    public class NewsLetterDto
+    public class NewsLetter : BaseModel<Guid>
     {
-        public string? Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public DateTime? Date { get; set; }

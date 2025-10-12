@@ -1,5 +1,5 @@
 ﻿
-namespace test_minimals.DTOs
+namespace myapi_minimals.DTOs
 {
     public class EmployeeFilter : IEndpointFilter
     {

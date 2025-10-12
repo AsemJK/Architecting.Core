@@ -1,4 +1,4 @@
-﻿namespace test_minimals.infra.Models.Identity
+﻿namespace myapi_minimals.infra.Models.Identity
 {
     public class User : BaseModel<Guid>
     {

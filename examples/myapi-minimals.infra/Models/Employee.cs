@@ -1,4 +1,4 @@
-﻿namespace test_minimals.infra.Models
+﻿namespace myapi_minimals.infra.Models
 {
     public class Employee : BaseModel<string>
     {
