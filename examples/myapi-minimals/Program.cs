@@ -252,11 +252,13 @@ updatesGroup.MapGet("/", ([FromQuery] DateTime? since = null) =>
     }
     return Results.Ok(updates);
 }).WithName("GetUpdates").RequireAuthorization();
-updatesGroup.MapPost("/", ([FromBody] dynamic update) =>
+updatesGroup.MapPost("/", ([FromBody] NewsLetterDto update) =>
 {
+    update.Id = Guid.NewGuid().ToString();
+    update.Date = DateTime.UtcNow.Date;
     _updates.ToList().Add(update);
     // In a real application, you would save the update to a database
-    return Results.Created($"/updates/4", update);
+    return Results.Created($"/updates/{update.Id}", update);
 }).WithName("CreateUpdate").RequireAuthorization();
 
 #endregion
