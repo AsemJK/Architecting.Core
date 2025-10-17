@@ -13,6 +13,7 @@ namespace myapi_minimals.infra.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<NewsLetter> NewsLetters { get; set; }
+        public DbSet<ToDo> ToDos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

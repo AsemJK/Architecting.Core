@@ -19,6 +19,7 @@ builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection("J
 
 // Register DataModule services
 builder.Services.AddApplicationDataModule(builder.Configuration);
+builder.Services.AddScoped<DapperRepository>();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
@@ -87,6 +88,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+#endregion
+
+#region Extra tools
+
+var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 
 #endregion
 
@@ -274,6 +281,29 @@ updatesGroup.MapPost("/", async ([FromBody] NewsLetterDto update, [FromServices]
 
 #endregion
 
+#region Dapper
+
+app.MapGet("/dapper/employees", async ([FromServices] DapperRepository repository) =>
+{
+    var employees = await repository.GetEmployeesAsync();
+    return Results.Ok(employees);
+}).WithName("GetDapperEmployees").RequireAuthorization();
+
+#endregion
+
+#region ToDo
+var todoGroup = app.MapGroup("/todo");
+todoGroup.MapPost("/", async ([FromBody] ToDo todo) =>
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    todo.Id = Guid.NewGuid();
+    db.ToDos.Add(todo);
+    await db.SaveChangesAsync();
+    return Results.Created($"/todo/{todo.Id}", todo);
+}).WithName("CreateToDo").RequireAuthorization();
+
+#endregion
 
 app.Run();
 

@@ -40,7 +40,7 @@ namespace myapi_minimals.Repository
 
             if (filter != null)
             {
-                query = query.Where(filter);
+                query = query.Where(filter).AsNoTracking();
             }
 
             return await query.ToListAsync();
