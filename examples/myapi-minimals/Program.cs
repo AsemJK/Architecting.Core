@@ -293,15 +293,29 @@ app.MapGet("/dapper/employees", async ([FromServices] DapperRepository repositor
 #endregion
 
 #region ToDo
-var todoGroup = app.MapGroup("/todo");
-todoGroup.MapPost("/", async ([FromBody] ToDo todo) =>
+var todoGroup = app.MapGroup("/todos");
+todoGroup.MapPost("/", async ([FromBody] List<ToDoDto> todos) =>
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    todo.Id = Guid.NewGuid();
-    db.ToDos.Add(todo);
+    foreach (var todo in todos)
+    {
+        todo.Id = Guid.NewGuid().ToString();
+        db.ToDos.Add(new ToDo
+        {
+            Id = Guid.Parse(todo.Id),
+            Description = todo.Description,
+            IsCompleted = todo.IsCompleted,
+            Date = todo.Date,
+            EntityName = todo.EntityName,
+            GroupName = todo.GroupName,
+            Tags = todo.Tags,
+            IsDeleted = todo.IsDeleted,
+            CreatedAt = DateTime.UtcNow
+        });
+    }
     await db.SaveChangesAsync();
-    return Results.Created($"/todo/{todo.Id}", todo);
+    return Results.Created($"/todos", todos);
 }).WithName("CreateToDo").RequireAuthorization();
 
 todoGroup.MapGet("/", async () =>
