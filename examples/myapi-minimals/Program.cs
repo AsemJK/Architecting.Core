@@ -1,6 +1,7 @@
 ﻿using identity.server;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using myapi_minimals.DTOs;
 using myapi_minimals.infra;
@@ -69,9 +70,9 @@ builder.Services.AddSignalR();
 
 #region Configure Services
 var app = builder.Build();
-Dataseeder.Seed(app);
+DataSeeder.Seed(app);
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || 1 == 1)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -158,14 +159,14 @@ employeeGroup.MapGet("/{id}", (string id) =>
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var employee = db.Employees.FirstOrDefault(e => e.Id == id);
+    var employee = db.Employees.FirstOrDefault(e => e.Id == Guid.Parse(id));
     if (employee == null)
     {
         return Results.NotFound();
     }
     var dto = new EmployeeDto
     {
-        Id = employee.Id,
+        Id = employee.Id.ToString(),
         Name = employee.Name,
         Position = employee.Position,
         Salary = employee.Salary
@@ -188,7 +189,7 @@ employeeGroup.MapPost("/", async ([FromBody] EmployeeDto payload) =>
     payload.Id = Guid.NewGuid().ToString();
     db.Employees.Add(new myapi_minimals.infra.Models.Employee
     {
-        Id = payload.Id,
+        Id = Guid.Parse(payload.Id),
         Name = payload.Name,
         Position = payload.Position,
         Salary = payload.Salary
@@ -302,6 +303,14 @@ todoGroup.MapPost("/", async ([FromBody] ToDo todo) =>
     await db.SaveChangesAsync();
     return Results.Created($"/todo/{todo.Id}", todo);
 }).WithName("CreateToDo").RequireAuthorization();
+
+todoGroup.MapGet("/", async () =>
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var todos = await db.ToDos.ToListAsync();
+    return Results.Ok(todos);
+}).WithName("GetToDos").RequireAuthorization();
 
 #endregion
 
